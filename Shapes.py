@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Create a shape Class with one data member called side1 and two class methods called getArea and getPerimeter.
 They are empty methods or abstract methods. You can write empty methods as
@@ -38,6 +39,14 @@ import math
 
 
 class Shapes:
+    """
+    Only one property is created and it will be overridden in each subsequent class. Two methods will also be overridden
+    by these classes. I set them up with the *args function because each will use a different number of arguments.
+    Square: side1
+    Circle: radius
+    Rectangle: side1 and side2
+    Triangle: side1, side2, and side3
+    """
     def __init__(self, side1):
         self.__side1 = side1
 
@@ -49,6 +58,13 @@ class Shapes:
 
 
 class Square(Shapes):
+    """
+    Inherit everything from Shapes. Override the __init__ method from shape and use it to create the side1 argument.
+    The sides are passed as strings so they must be converted to floats to be used when the user inputs integers or
+    floats.
+
+    The Circle and Rectangle are similar classes.
+    """
     def __init__(self, side1):
         Shapes.__init__(self, side1)
 
@@ -83,17 +99,26 @@ class Rectangle(Shapes):
 
 
 class Triangle(Shapes):
+    """
+    The major difference in the triangle class is the isrounded=False. I used math.sqrt and floats so that the precision
+    are at the highest possible. get_perimeter is needed for get_area as described below.
+    """
     def __init__(self, side1, side2, side3):
         Shapes.__init__(self, side1)
         self.__side2 = side2
         self.__side3 = side3
 
     def get_perimeter(self, side1, side2, side3, isrounded=False):
-        if isrounded == True:
+        if isrounded is True:
             return round(float(side1) + float(side2) + float(side3), 2)
         else:
             return float(side1) + float(side2) + float(side3)
 
     def get_area(self, side1, side2, side3):
-        semiperimeter = Triangle.get_perimeter(self, side1, side2, side3) / 2
-        return round(math.sqrt(semiperimeter * (semiperimeter - float(side1)) * semiperimeter * (semiperimeter - float(side2)) * semiperimeter * (semiperimeter - float(side3))), 2)
+        """
+        I used an extra variable here because I wanted to try out Heron's formula. So the semiperimeter is created from
+        the get_perimeter method. I left the isrounded argument set at the default - True. Now I get the full precision.
+        Now the formula will be more precise before I decide to round the final answer.
+        """
+        s = Triangle.get_perimeter(self, side1, side2, side3) / 2  # s is the semiperimeter
+        return round(math.sqrt(s * (s - float(side1)) * s * (s - float(side2)) * s * (s - float(side3))), 2)
