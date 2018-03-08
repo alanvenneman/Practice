@@ -121,4 +121,4 @@ class Triangle(Shapes):
         Now the formula will be more precise before I decide to round the final answer.
         """
         s = Triangle.get_perimeter(self, side1, side2, side3) / 2  # s is the semiperimeter
-        return round(math.sqrt(s * (s - float(side1)) * s * (s - float(side2)) * s * (s - float(side3))), 2)
+        return round(math.sqrt(s * (s - float(side1)) * (s - float(side2)) * (s - float(side3))), 2)
