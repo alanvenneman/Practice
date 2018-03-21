@@ -1,4 +1,4 @@
-TUPLE = (1)
+TUPLE = (1, 2)
 
 repeats = 0
 number = 0

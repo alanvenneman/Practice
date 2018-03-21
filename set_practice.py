@@ -9,15 +9,21 @@ there is at least one value in the set.
 
 weights = {12, 19, 6, 14, 22, 7}
 desired_weight = 18
-mylist = []
-modulus = []
+# create a list of absolute values
+abs_values = []
+smallest_values = [] # How do I put the smallest values from abs_values here?
 for i in weights:
-    remainder = desired_weight//i
-    mylist.append(remainder)
-for i in weights:
-    number = desired_weight % i
-    modulus.append(number)
-
-print(mylist)
-print(modulus)
-
+    number = abs(desired_weight - i)
+    abs_values.append(number)
+# find the smallest absolute value
+smallest = min(abs_values)
+# count minimum values
+if abs_values.count(min(abs_values)) > 1:
+    print("There is more than one close to desired weight. Therefore, we shall choose the smallest number.")
+# create dictionary to link weights to absolute values
+weights_list = list(weights)
+weights_values = dict(zip(weights_list, abs_values))
+for k, v in weights_values.items():
+    if v == smallest:
+        smallest_values.append(k)
+print(min(smallest_values))
