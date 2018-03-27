@@ -7,7 +7,7 @@ to be chosen. Thus if the set is (2, 4, 6, 8, 10) and desired_weight is 7, the v
 there is at least one value in the set.
 """
 
-weights = {12, 19, 6, 14, 22, 7}
+weights = {12, 19, 6, 14, 22, 7, 17}
 desired_weight = 18
 # create a list of absolute values
 abs_values = []
