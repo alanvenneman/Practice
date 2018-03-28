@@ -17,7 +17,7 @@ while week < 53:
     year.setdefault(week, {})['Saturday'] = random.randrange(0, 99)
     week += 1
 
-day = raw_input('Enter a day of the week ==> ')
+day = input('Enter a day of the week ==> ')
 
 for key, value in year.items():
     for k, v in value.items():
