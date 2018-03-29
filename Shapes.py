@@ -36,6 +36,7 @@ Please keep the scope of this assignment as simple as possible and learn the inh
 we get all the concepts, we can expand by adding more functionalities.
 """
 import math
+from BraveNewException import BraveNewException
 
 
 class Shapes:
@@ -80,10 +81,22 @@ class Circle(Shapes):
         Shapes.__init__(self, side1)
 
     def get_area(self, radius):
-        return round(math.pi * pow(float(radius), 2), 2)
+        if radius <= 0:
+            raise BraveNewException(radius)
+        else:
+            print(radius*radius)
+            #return 3.1415 * radius * radius
+            return round(math.pi * pow(float(radius), 2),2)
+            #return round(math.pi * pow(float(radius), 2), 2)
+        #else:
+         #   print("ERROR...")
+          #  raise BraveNewException("This ERROR is raised by My Exception")
 
     def get_perimeter(self, radius):
-        return round(2 * math.pi * float(radius), 2)
+        if float(radius) > 0.0:
+            return round(2 * math.pi * float(radius), 2)
+        else:
+            raise BraveNewException
 
 
 class Rectangle(Shapes):
