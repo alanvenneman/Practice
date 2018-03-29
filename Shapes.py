@@ -70,10 +70,16 @@ class Square(Shapes):
         Shapes.__init__(self, side1)
 
     def get_area(self, side1):
-        return float(side1) ** 2
+        if side1 <= 0:
+            raise BraveNewException(side1)
+        else:
+            return side1 ** 2
 
     def get_perimeter(self, side1):
-        return 4 * float(side1)
+        if side1 <= 0:
+            raise BraveNewException(side1)
+        else:
+            return 4 * side1
 
 
 class Circle(Shapes):
@@ -84,19 +90,13 @@ class Circle(Shapes):
         if radius <= 0:
             raise BraveNewException(radius)
         else:
-            print(radius*radius)
-            #return 3.1415 * radius * radius
             return round(math.pi * pow(float(radius), 2),2)
-            #return round(math.pi * pow(float(radius), 2), 2)
-        #else:
-         #   print("ERROR...")
-          #  raise BraveNewException("This ERROR is raised by My Exception")
 
     def get_perimeter(self, radius):
-        if float(radius) > 0.0:
-            return round(2 * math.pi * float(radius), 2)
+        if radius <= 0:
+            raise BraveNewException(radius)
         else:
-            raise BraveNewException
+            return round(2 * math.pi * float(radius), 2)
 
 
 class Rectangle(Shapes):
@@ -105,10 +105,16 @@ class Rectangle(Shapes):
         self.__side2 = side2
 
     def get_area(self, side1, side2):
-        return float(side1) * float(side2)
+        if side1 <= 0 or side2 <= 0:
+            raise BraveNewException(side1, side2)
+        else:
+            return side1 * side2
 
     def get_perimeter(self, side1, side2):
-        return float(side1) * 2 + float(side2) * 2
+        if side1 <= 0 or side2 <= 0:
+            raise BraveNewException(side1, side2)
+        else:
+            return side1 * 2 + side2 * 2
 
 
 class Triangle(Shapes):
@@ -122,10 +128,13 @@ class Triangle(Shapes):
         self.__side3 = side3
 
     def get_perimeter(self, side1, side2, side3, isrounded=False):
-        if isrounded is True:
-            return round(float(side1) + float(side2) + float(side3), 2)
+        if side1 <= 0 or side2 <= 0 or side3 <= 0:
+            raise BraveNewException(side1, side2, side3)
         else:
-            return float(side1) + float(side2) + float(side3)
+            if isrounded is True:
+                return round(side1 + side2 + side3, 2)
+            else:
+                return side1 + side2 + side3
 
     def get_area(self, side1, side2, side3):
         """
@@ -133,5 +142,8 @@ class Triangle(Shapes):
         the get_perimeter method. I left the isrounded argument set at the default - True. Now I get the full precision.
         Now the formula will be more precise before I decide to round the final answer.
         """
-        s = Triangle.get_perimeter(self, side1, side2, side3) / 2  # s is the semiperimeter
-        return round(math.sqrt(s * (s - float(side1)) * (s - float(side2)) * (s - float(side3))), 2)
+        if side1 <= 0 or side2 <= 0 or side3 <= 0:
+            raise BraveNewException(side1, side2, side3)
+        else:
+            s = Triangle.get_perimeter(self, side1, side2, side3) / 2  # s is the semiperimeter
+            return round(math.sqrt(s * (s - side1) * (s - side2) * (s - side3)), 2)
