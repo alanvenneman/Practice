@@ -27,7 +27,7 @@ def data_frame():
     read.close()
 
     arcpy.SelectLayerByAttribute_management(subdiv, "NEW_SELECTION", sub)
-    # mapframe.zoomToAllLayers()
+
 create_list()
 data_frame()
 
@@ -36,7 +36,7 @@ del mxd
 """
 Idea for class structure
 
-###############################################
+#################################################
 
 class Selector():
     def __init__(self, s_path, s_main, d_main):
@@ -44,6 +44,8 @@ class Selector():
         self.sanitary_main = s_main
         self.water_main = w_main
         self.drainage_main = d_main
+        # self.field_name = f_name
+        # self.suggested_psn = sug_psn
         
     def function():
         pass
@@ -56,7 +58,7 @@ class Sanitary_Updater(Selector):
     def update_sanitary(self, s_main):
         pass
         
-##############################################
+#################################################
 
 This may not be the most efficient way to do this, but it satisfies the inheritance requirement. I may not need a class
 for each of the three features, but I will need the subdivision feature multiple places as will need the three line
