@@ -38,17 +38,21 @@ Idea for class structure
 
 #################################################
 
-class Selector():
+class PointInPolygon():
     def __init__(self, s_path, s_main, d_main):
         self.subdivision_feature = s_path
+        self.subdivision_copy = sub_copy
         self.sanitary_main = s_main
         self.water_main = w_main
         self.drainage_main = d_main
+        # self.proj_serial_num = psn
         # self.field_name = f_name
-        # self.suggested_psn = sug_psn
+        # self.suggested_proj_serial_num = sug_psn
         
-    def function():
-        pass
+    def delete():
+        arcpy.Delete_management(self.subdivision_copy)
+        
+    def find_points(feature, path):
         
         
 class Sanitary_Updater(Selector):
