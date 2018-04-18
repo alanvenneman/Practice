@@ -1,7 +1,7 @@
-class BraveNewException(RuntimeError):
-    def __init__(self, radius):
+class BraveNewException(ArithmeticError):
+    def __init__(self, *args):
         super().__init__()
-        self.radius = radius
+        self.side = args
 
     # def zero_radius(self):
     #     if self.radius <= 0:
