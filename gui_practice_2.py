@@ -49,6 +49,9 @@ class WidgetDemo():
         if (self.v2.get() == 2):
             self.text["fg"] = "Red"
             self.text["bg"] = "#FFAABB"
+        elif(self.v2.get() == 1):
+            self.text["fg"] = "Blue"
+            self.text["bg"] = "lightblue"
         print("Radio Button Pressed ", self.v2.get())
 
     def processNamebutton(self):

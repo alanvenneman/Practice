@@ -8,3 +8,4 @@ class Calculator():
         frame1 = Frame(window)
         frame1.pack()
 
+    plusButton = Button(frame1, text="+", )
