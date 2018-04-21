@@ -11,16 +11,21 @@ def binarySearch(list1, key):
         else:
             low = mid + 1
 
-    return low
+    return -low - 1
 
-import random
+def listGeneration(listlength, upperbound):
+    import random
 
-p = 0
-li = []
-while p <= 10:
-    li.append(random.randint(1, 15))
-    p += 1
+    p = 0
+    li = []
+    while p <= listlength:
+        li.append(random.randint(1, upperbound))
+        p += 1
+    return li
+
+upperbound = eval(input("Enter an integer that will be the upper bound for the random list of numbers\nThe higher the"
+                        "number, the more difficult it will be to guess correctly: "))
+number = eval(input("Search for a number between 1 and {}: ".format(upperbound)))
+li = listGeneration(10, upperbound)
 print("Before search: ", li)
-
-results = binarySearch(li, 3)
-print(results)
+print("After search:", binarySearch(li, number))
