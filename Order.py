@@ -7,7 +7,7 @@ class Order:
 
     def get_grand_total(self):
         for item in self.cart:
-            # add each item in list together
+            self.cart.append(item)
 
 
 class Product(Order):
@@ -53,6 +53,7 @@ class Shoes(Product):
 
 class OrderLine(Order):
     def __init__(self):
+        Order.__init__(self)
         Order.cart = []
         self.quantity = 0
         self.tax = 0.0875
@@ -65,7 +66,7 @@ class Customer(Order):
     def __init__(self):
         Order.__init__(self)
         self.__firstname = ""
-        self.__lastname  = ""
+        self.__lastname = ""
         self.__customer_id = ""
         self.__customer_email = ""
 
@@ -127,4 +128,5 @@ class Address(Customer):
         self.__country = country
 
     def get_address(self):
-        return "\n" + self.get_name() + "\n" + self.get_unit_street() + "\n" + self.get_city() + " " + self.get_zip_code() + "\n" + self.get_country()
+        return "\n" + self.get_name() + "\n" + self.get_unit_street() + "\n" + self.get_city() + " " \
+               + self.get_zip_code() + "\n" + self.get_country()

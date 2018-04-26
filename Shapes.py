@@ -84,7 +84,8 @@ class Square(Shapes):
 
 class Circle(Shapes):
     def __init__(self, side1):
-        Shapes.__init__(self, side1)
+        super().__init__(self, side1)
+        # Shapes.__init__(self, side1)
 
     def get_area(self, radius):
         if radius <= 0:
