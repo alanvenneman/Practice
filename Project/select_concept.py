@@ -33,6 +33,7 @@ data_frame()
 
 del mxd
 
+
 """
 Idea for class structure
 

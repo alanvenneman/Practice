@@ -1,4 +1,4 @@
-from Project.Mixin import Mixin
+from module.Mixin import Mixin
 
 
 class Searching(Mixin):

@@ -1,7 +1,6 @@
 class Mixin(object):
     pass
 
-
     def binarySearch(self, list1, key):
         low = 0
         high = len(list1) - 1
@@ -28,13 +27,13 @@ class Mixin(object):
             sort[k + 1] = current_element
         return sort
 
-    def listGeneration(self, listlength, upperbound):
+    def listGeneration(self, list_length, upper_bound):
         import random
 
         p = 0
         li = []
-        while p <= listlength:
-            li.append(random.randint(1, upperbound))
+        while p <= list_length:
+            li.append(random.randint(1, upper_bound))
             p += 1
         return li
 
@@ -50,10 +49,25 @@ class Mixin(object):
 
     def point_in_polygon_spatial_join(self, utility, polygon, output):
         import arcpy
-        arcpy.SpatialJoin_analysis(utility, polygon, output, "#", "#", "#", "HAVE_THEIR_CENTER_IN")
+
+        # take care of the field mapping first
+        field_mappings = arcpy.FieldMappings()
+        field_mappings.addTable(utility)
+        field_mappings.addTable(polygon)
+
+        arcpy.SpatialJoin_analysis(utility,
+                                   polygon,
+                                   output,
+                                   "JOIN_ONE_TO_MANY",
+                                   "KEEP_ALL",
+                                   field_mappings,
+                                   "HAVE_THEIR_CENTER_IN")
         return output
 
     def compare_fields(self, utility, field):
         import arcpy
+
         if field not in utility:
             arcpy.AddField_management(utility, field_name="SUGGESTED_PROJECT_SERIAL_NUMBER", field_type="TEXT")
+        cursor = arcpy.da.SearchCursor()
+
