@@ -1,5 +1,5 @@
 import arcpy
-import os
+# import os
 # from module.Mixin import Mixin
 # import importlib
 # importlib.reload(Mixin)
@@ -48,13 +48,20 @@ class ProjectIDTool(object): #, Mixin):
         param2.parameterDependencies = [param1.name]
 
         param3 = arcpy.Parameter(
+            displayName="Workspace",
+            name="database",
+            datatype="DEWorkspace",
+            parameterType="Required",
+            direction="Input")
+
+        param4 = arcpy.Parameter(
             displayName="Output Joined Feature",
             name="output_feature",
             datatype="GPFeatureLayer",
             parameterType="Required",
             direction="Output")
 
-        params = [param0, param1, param2, param3]
+        params = [param0, param1, param2, param3, param4]
         return params
 
     def isLicensed(self):
@@ -72,31 +79,27 @@ class ProjectIDTool(object): #, Mixin):
         parameter.  This method is called after internal validation."""
         return
 
-    def copy_subdivision_add_field(self, polygon):
-        arcpy.env.overwriteOutput = True
-        original = r"C:\Users\avenneman\Documents\Programming\SelectWork\output.gdb"
-        polygon_copy = os.path.join(polygon, original)
-        # layer = arcpy.MakeFeatureLayer_management(polygon, "polygon_layer")
-        arcpy.Copy_management(polygon, polygon_copy)
-        arcpy.AddField_management(polygon_copy, "PSN_COPY", "TEXT")
-        arcpy.CalculateField_management(polygon_copy, "PSN_COPY", "!PROJECT_SERIAL_NUMBER!", "PYTHON3")
-        return polygon_copy
+    def copy_feature_class(self, path, gdb_name, scratch_gdb, feature_type):
+        import os
 
-    def point_in_polygon_spatial_join(self, utility, polygon_copy, output):
-        # take care of the field mapping first
-        field_mappings = arcpy.FieldMappings()
-        field_mappings.addTable(utility)
-        field_mappings.addTable(polygon_copy)
+        arcpy.env.workspace = os.path.join(path, gdb_name)
+        arcpy.CreateFileGDB_management(path, scratch_gdb)
+        fclist = arcpy.ListFeatureClasses("*", feature_type)
 
-        arcpy.SpatialJoin_analysis(utility,
-                                   polygon_copy,
-                                   output,
-                                   "JOIN_ONE_TO_MANY",
-                                   "KEEP_ALL",
-                                   field_mappings,
-                                   "HAVE_THEIR_CENTER_IN")
-        arcpy.Delete_management(polygon_copy)
-        return output
+        for fc in fclist:
+            fcdesc = arcpy.Describe(fc)
+            copied_feature = f"{path}\\{scratch_gdb}\\{fcdesc.basename}"
+            poop = arcpy.CopyFeatures_management(fc, copied_feature)
+            arcpy.AddField_management(poop, "PSN_COPY", "TEXT")
+            arcpy.CalculateField_management(poop, "PSN_COPY", "!PROJECT_SERIAL_NUMBER!", "PYTHON3")
+            arcpy.SpatialJoin_analysis(os.path.join(path + gdb_name, "ArcSDE_SDE_sGravityMain"),
+                                       poop,
+                                       "spatial_joined",
+                                       "JOIN_ONE_TO_MANY",
+                                       "KEEP_ALL",
+                                       "",
+                                       "HAVE_THEIR_CENTER_IN")
+            return poop
 
     # def compare_fields(self, utility, field):
     #     if field not in utility:
@@ -109,15 +112,17 @@ class ProjectIDTool(object): #, Mixin):
         utility_features = parameters[0].valueAsText
         subdivision_feature = parameters[1].valueAsText
         project_serial_number_field = parameters[2].valueAsText
-        output_feature = parameters[3].valueAsText
+        database = parameters[3].valueAsText
+        output_feature = parameters[4].valueAsText
 
         if int(arcpy.GetCount_management(utility_features)[0]) == 0:
             messages.addErrorMessage(f"{utility_features} has no features")
-        polygon_copy = ProjectIDTool.copy_subdivision_add_field(self, subdivision_feature)
-        joined_feature = ProjectIDTool.point_in_polygon_spatial_join(self,
-                                                                     utility_features,
-                                                                     polygon_copy,
-                                                                     output_feature)
+        joined_feature = ProjectIDTool.copy_feature_class(self,
+                                                          "C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\",
+                                                          "Features.gdb",
+                                                          "scratch.gdb",
+                                                          "polygon")
+
         fields = arcpy.ListFields(joined_feature)
         for field in fields:
             if field.name == project_serial_number_field:

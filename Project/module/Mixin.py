@@ -71,3 +71,31 @@ class Mixin(object):
             arcpy.AddField_management(utility, field_name="SUGGESTED_PROJECT_SERIAL_NUMBER", field_type="TEXT")
         cursor = arcpy.da.SearchCursor()
 
+    def create_gdb_in_new_folder(self, path, gdb_name):
+        import arcpy
+        import pathlib
+        import sys
+
+        new_path = pathlib.Path(path)
+
+        if not pathlib.Path.exists(new_path):
+            pathlib.Path(new_path).mkdir(parents=True, exist_ok=True)
+
+        try:
+            arcpy.env.workspace = str(new_path)
+            arcpy.env.overwriteOutput = True
+            arcpy.CreateFileGDB_management(str(new_path), gdb_name)
+        except Exception:
+            e = sys.exc_info()[1]
+            print(e.args[0])
+            arcpy.AddError(e.args[0])
+
+    def copy_feature_class(self, original_gdb_path, path, gdb_name, feature_type):
+        import arcpy
+
+        arcpy.env.workspace = original_gdb_path
+        fclist = arcpy.ListFeatureClasses("*", feature_type)
+
+        for fc in fclist:
+            fcdesc = arcpy.Describe(fc)
+        arcpy.CopyFeatures_management(fc, f"{path}\\{gdb_name}\\{fcdesc.basename}")
