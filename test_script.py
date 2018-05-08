@@ -45,20 +45,30 @@ def copy_feature_class(path, gdb_name, scratch_gdb, feature_type):
                                    "HAVE_THEIR_CENTER_IN")
         return poop
 
-def compare_fields(utility, psn_field, suggested_field):
+def compare_fields(join_table, subdivision_psn, utility):
     import arcpy
 
-    # if suggested_field not in utility:
-    #     arcpy.AddField_management(utility, field_name=suggested_field, field_type="TEXT")
-    #     arcpy.AddMessage("SUGGESTED_PROJECT_SERIAL_NUMBER added to feature class.")
-    cursor = arcpy.da.UpdateCursor(utility, [psn_field, suggested_field])
-    row = cursor.next()
-    while row:
-        if row.getValue(psn_field) != row.getValue("PSN_COPY"):
-            row.setValue(suggested_field, row.getValue("PSN_COPY"))
-            cursor.updateRow(row)
-        row = cursor.next()
-    del row
+
+    s_cursor = arcpy.SearchCursor(join_table)
+    s_row = s_cursor.next()
+    while s_row:
+        if s_row.getValue(subdivision_psn) != s_row.getValue("PROJECT_SERIAL_NUMBER_1") and s_row.getValue("Join_Count") == 1:
+            target_id = s_row.getValue("TARGET_FID")
+            suggested_psn = s_row.getValue(subdivision_psn)
+
+
+            u_cursor = arcpy.UpdateCursor(utility)
+            row = u_cursor.next()
+            while row:
+                if row.getValue("OBJECTID") == target_id:
+                    row.setValue("SUGGESTED_PROJECT_SERIAL_NUMBER", suggested_psn)
+                    u_cursor.updateRow(row)
+                    print("row updated")
+                row = u_cursor.next()
+                # print(f"Current row: {row}")
+            del row
+        s_row = s_cursor.next()
+    del s_row
 
 
 def clean_up(file):
@@ -68,12 +78,13 @@ def clean_up(file):
     arcpy.Delete_management(file)
 
 feature = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb", "ArcSDE_SDE_sGravityMain")
+subdivision_join = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb", "spatial_joined")
 
 copy_feature_class("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\",
                    "Features.gdb",
                    "Scratch.gdb",
                    "polygon")
-compare_fields(feature, "Project_Serial_Number", "SUGGESTED_PROJECT_SERIAL_NUMBER")
+compare_fields(subdivision_join, "Project_Serial_Number", feature)
 
 delete = input("Undo? Y/N\n")
 if delete == 'Y' or delete == 'y':

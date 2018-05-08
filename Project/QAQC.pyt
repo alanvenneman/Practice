@@ -1,5 +1,6 @@
 import arcpy
-# import os
+import os
+import time
 # from module.Mixin import Mixin
 # import importlib
 # importlib.reload(Mixin)
@@ -32,36 +33,37 @@ class ProjectIDTool(object): #, Mixin):
             parameterType="Required",
             direction="Input")
 
+        # param1 = arcpy.Parameter(
+        #     displayName="Project Serial Number Source Feature",
+        #     name="subdivision_feature",
+        #     datatype="GPFeatureLayer",
+        #     parameterType="Required",
+        #     direction="Input")
+
+        # param1 = arcpy.Parameter(
+        #     displayName="Project Serial Number Field",
+        #     name="psn_field",
+        #     datatype="Field",
+        #     parameterType="Required",
+        #     direction="Input")
+        # param1.parameterDependencies = [param1.name]
+
         param1 = arcpy.Parameter(
-            displayName="Project Serial Number Source Feature",
-            name="subdivision_feature",
-            datatype="GPFeatureLayer",
-            parameterType="Required",
-            direction="Input")
-
-        param2 = arcpy.Parameter(
-            displayName="Project Serial Number Field",
-            name="psn_field",
-            datatype="Field",
-            parameterType="Required",
-            direction="Input")
-        param2.parameterDependencies = [param1.name]
-
-        param3 = arcpy.Parameter(
             displayName="Workspace",
             name="database",
             datatype="DEWorkspace",
             parameterType="Required",
             direction="Input")
 
-        param4 = arcpy.Parameter(
+        param2 = arcpy.Parameter(
             displayName="Output Joined Feature",
             name="output_feature",
             datatype="GPFeatureLayer",
-            parameterType="Required",
+            parameterType="Derived",
             direction="Output")
+        param2.parameterDependencies = [param0.name]
 
-        params = [param0, param1, param2, param3, param4]
+        params = [param0, param1, param2]
         return params
 
     def isLicensed(self):
@@ -92,40 +94,76 @@ class ProjectIDTool(object): #, Mixin):
             poop = arcpy.CopyFeatures_management(fc, copied_feature)
             arcpy.AddField_management(poop, "PSN_COPY", "TEXT")
             arcpy.CalculateField_management(poop, "PSN_COPY", "!PROJECT_SERIAL_NUMBER!", "PYTHON3")
-            arcpy.SpatialJoin_analysis(os.path.join(path + gdb_name, "ArcSDE_SDE_sGravityMain"),
+            arcpy.SpatialJoin_analysis(os.path.join(f"{path}\\{gdb_name}", "ArcSDE_SDE_sGravityMain"),
                                        poop,
                                        "spatial_joined",
                                        "JOIN_ONE_TO_MANY",
                                        "KEEP_ALL",
                                        "",
                                        "HAVE_THEIR_CENTER_IN")
-            return poop
+            spatial_output = os.path.join(f"{path}\\{gdb_name}", "spatial_joined")
+            return spatial_output
 
-    # def compare_fields(self, utility, field):
-    #     if field not in utility:
-    #         arcpy.AddField_management(utility, field_name="SUGGESTED_PROJECT_SERIAL_NUMBER", field_type="TEXT")
-    #         arcpy.AddMessage("SUGGESTED_PROJECT_SERIAL_NUMBER added to feature class.")
-    #     cursor = arcpy.da.SearchCursor()
+    def compare_fields(self, join_table, utility):
+        import arcpy
+        import time
+
+
+        s_cursor = arcpy.SearchCursor(join_table)
+        s_row = s_cursor.next()
+        while s_row:
+            if s_row.getValue("PROJECT_SERIAL_NUMBER_1") != s_row.getValue("PROJECT_SERIAL_NUMBER") and s_row.getValue(
+                    "Join_Count") == 1:
+                target_id = s_row.getValue("TARGET_FID")
+                suggested_psn = s_row.getValue("PROJECT_SERIAL_NUMBER_1")
+
+                u_cursor = arcpy.UpdateCursor(utility)
+                row = u_cursor.next()
+                while row:
+                    if row.getValue("OBJECTID") == target_id:
+                        row.setValue("SUGGESTED_PROJECT_SERIAL_NUMBER", suggested_psn)
+                        u_cursor.updateRow(row)
+                        localtime = time.asctime(time.localtime(time.time()))
+                        print(f"row updated for {target_id} at {localtime}")
+                    row = u_cursor.next()
+                del row
+            s_row = s_cursor.next()
+        del s_row
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        utility_features = parameters[0].valueAsText
-        subdivision_feature = parameters[1].valueAsText
-        project_serial_number_field = parameters[2].valueAsText
-        database = parameters[3].valueAsText
-        output_feature = parameters[4].valueAsText
+        xutility_features = parameters[0].valueAsText
+        # xsubdivision_feature = parameters[1].valueAsText
+        # project_serial_number_field = parameters[1].valueAsText
+        xdatabase = parameters[1].valueAsText
+        xoutput_feature = parameters[2].valueAsText
+
+        utility_features = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb",
+                                        "ArcSDE_SDE_wPressurizedMain_2018")
+        database = "C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb"
+        output_feature = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb",
+                                      "ArcSDE_SDE_wPressurizedMain_2018")
 
         if int(arcpy.GetCount_management(utility_features)[0]) == 0:
             messages.addErrorMessage(f"{utility_features} has no features")
+        path = os.path.dirname(database)
+        gdb_name = os.path.basename(database)
         joined_feature = ProjectIDTool.copy_feature_class(self,
-                                                          "C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\",
-                                                          "Features.gdb",
+                                                          path,
+                                                          gdb_name,
                                                           "scratch.gdb",
                                                           "polygon")
 
-        fields = arcpy.ListFields(joined_feature)
-        for field in fields:
-            if field.name == project_serial_number_field:
-                arcpy.AddMessage("true")
+        ProjectIDTool.compare_fields(self, joined_feature, utility_features)
+        endtime = time.asctime(time.localtime(time.time()))
+        print(endtime)
 
-        return
+        return output_feature
+
+def main():
+    tbx = Toolbox()
+    tool = ProjectIDTool()
+    tool.execute(tool.getParameterInfo(), None)
+
+if __name__ == "__main__":
+    main()

@@ -64,12 +64,32 @@ class Mixin(object):
                                    "HAVE_THEIR_CENTER_IN")
         return output
 
-    def compare_fields(self, utility, field):
+    def compare_fields(self, join_table, utility):
         import arcpy
+        import time
 
-        if field not in utility:
-            arcpy.AddField_management(utility, field_name="SUGGESTED_PROJECT_SERIAL_NUMBER", field_type="TEXT")
-        cursor = arcpy.da.SearchCursor()
+        localtime = time.asctime( time.localtime(time.time()) )
+
+        s_cursor = arcpy.SearchCursor(join_table)
+        s_row = s_cursor.next()
+        while s_row:
+            if s_row.getValue("PROJECT_SERIAL_NUMBER_1") != s_row.getValue("PROJECT_SERIAL_NUMBER") and s_row.getValue(
+                    "Join_Count") == 1:
+                target_id = s_row.getValue("TARGET_FID")
+                suggested_psn = s_row.getValue("PROJECT_SERIAL_NUMBER_1")
+
+                u_cursor = arcpy.UpdateCursor(utility)
+                row = u_cursor.next()
+                while row:
+                    if row.getValue("OBJECTID") == target_id:
+                        row.setValue("SUGGESTED_PROJECT_SERIAL_NUMBER", suggested_psn)
+                        u_cursor.updateRow(row)
+                        print(f"row updated for {target_id} at {localtime}")
+                    row = u_cursor.next()
+                    # print(f"Current row: {row}")
+                del row
+            s_row = s_cursor.next()
+        del s_row
 
     def create_gdb_in_new_folder(self, path, gdb_name):
         import arcpy
@@ -90,12 +110,26 @@ class Mixin(object):
             print(e.args[0])
             arcpy.AddError(e.args[0])
 
-    def copy_feature_class(self, original_gdb_path, path, gdb_name, feature_type):
+    def copy_feature_class(self, path, gdb_name, scratch_gdb, feature_type):
         import arcpy
+        import os
 
-        arcpy.env.workspace = original_gdb_path
+        arcpy.env.workspace = os.path.join(path, gdb_name)
+        arcpy.CreateFileGDB_management(path, scratch_gdb)
         fclist = arcpy.ListFeatureClasses("*", feature_type)
 
         for fc in fclist:
             fcdesc = arcpy.Describe(fc)
-        arcpy.CopyFeatures_management(fc, f"{path}\\{gdb_name}\\{fcdesc.basename}")
+            copied_feature = f"{path}\\{scratch_gdb}\\{fcdesc.basename}"
+            poop = arcpy.CopyFeatures_management(fc, copied_feature)
+            arcpy.AddField_management(poop, "PSN_COPY", "TEXT")
+            arcpy.CalculateField_management(poop, "PSN_COPY", "!PROJECT_SERIAL_NUMBER!", "PYTHON3")
+            arcpy.SpatialJoin_analysis(os.path.join(f"{path}\\{gdb_name}", "ArcSDE_SDE_sGravityMain"),
+                                       poop,
+                                       "spatial_joined",
+                                       "JOIN_ONE_TO_MANY",
+                                       "KEEP_ALL",
+                                       "",
+                                       "HAVE_THEIR_CENTER_IN")
+            spatial_output = os.path.join(f"{path}\\{gdb_name}", "spatial_joined")
+            return spatial_output
