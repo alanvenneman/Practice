@@ -1,9 +1,6 @@
 import arcpy
 import os
 import time
-# from module.Mixin import Mixin
-# import importlib
-# importlib.reload(Mixin)
 
 
 class Toolbox(object):
@@ -16,7 +13,7 @@ class Toolbox(object):
         self.tools = [ProjectIDTool]
 
 
-class ProjectIDTool(object): #, Mixin):
+class ProjectIDTool(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = "Project Serial Number QA/QC Tool"
@@ -33,37 +30,29 @@ class ProjectIDTool(object): #, Mixin):
             parameterType="Required",
             direction="Input")
 
-        # param1 = arcpy.Parameter(
-        #     displayName="Project Serial Number Source Feature",
-        #     name="subdivision_feature",
-        #     datatype="GPFeatureLayer",
-        #     parameterType="Required",
-        #     direction="Input")
-
-        # param1 = arcpy.Parameter(
-        #     displayName="Project Serial Number Field",
-        #     name="psn_field",
-        #     datatype="Field",
-        #     parameterType="Required",
-        #     direction="Input")
-        # param1.parameterDependencies = [param1.name]
-
         param1 = arcpy.Parameter(
+            displayName="Project Serial Number Source Feature",
+            name="subdivision_feature",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input")
+
+        param2 = arcpy.Parameter(
             displayName="Workspace",
             name="database",
             datatype="DEWorkspace",
             parameterType="Required",
             direction="Input")
 
-        param2 = arcpy.Parameter(
+        param3 = arcpy.Parameter(
             displayName="Output Joined Feature",
             name="output_feature",
             datatype="GPFeatureLayer",
             parameterType="Derived",
             direction="Output")
-        param2.parameterDependencies = [param0.name]
+        param3.parameterDependencies = [param0.name]
 
-        params = [param0, param1, param2]
+        params = [param0, param1, param2, param3]
         return params
 
     def isLicensed(self):
@@ -81,33 +70,23 @@ class ProjectIDTool(object): #, Mixin):
         parameter.  This method is called after internal validation."""
         return
 
-    def copy_feature_class(self, path, gdb_name, scratch_gdb, feature_type):
+    def copy_feature_class(self, path, gdb_name, subdivision, utility):
         import os
 
         arcpy.env.workspace = os.path.join(path, gdb_name)
-        arcpy.CreateFileGDB_management(path, scratch_gdb)
-        fclist = arcpy.ListFeatureClasses("*", feature_type)
-
-        for fc in fclist:
-            fcdesc = arcpy.Describe(fc)
-            copied_feature = f"{path}\\{scratch_gdb}\\{fcdesc.basename}"
-            poop = arcpy.CopyFeatures_management(fc, copied_feature)
-            arcpy.AddField_management(poop, "PSN_COPY", "TEXT")
-            arcpy.CalculateField_management(poop, "PSN_COPY", "!PROJECT_SERIAL_NUMBER!", "PYTHON3")
-            arcpy.SpatialJoin_analysis(os.path.join(f"{path}\\{gdb_name}", "ArcSDE_SDE_sGravityMain"),
-                                       poop,
-                                       "spatial_joined",
-                                       "JOIN_ONE_TO_MANY",
-                                       "KEEP_ALL",
-                                       "",
-                                       "HAVE_THEIR_CENTER_IN")
-            spatial_output = os.path.join(f"{path}\\{gdb_name}", "spatial_joined")
-            return spatial_output
+        arcpy.SpatialJoin_analysis(utility,
+                                   subdivision,
+                                   "spatial_joined",
+                                   "JOIN_ONE_TO_MANY",
+                                   "KEEP_ALL",
+                                   "",
+                                   "HAVE_THEIR_CENTER_IN")
+        spatial_output = os.path.join(f"{path}\\{gdb_name}", "spatial_joined")
+        return spatial_output
 
     def compare_fields(self, join_table, utility):
         import arcpy
         import time
-
 
         s_cursor = arcpy.SearchCursor(join_table)
         s_row = s_cursor.next()
@@ -133,16 +112,17 @@ class ProjectIDTool(object): #, Mixin):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         xutility_features = parameters[0].valueAsText
-        # xsubdivision_feature = parameters[1].valueAsText
-        # project_serial_number_field = parameters[1].valueAsText
-        xdatabase = parameters[1].valueAsText
-        xoutput_feature = parameters[2].valueAsText
+        xsubdivision_feature = parameters[1].valueAsText
+        xdatabase = parameters[2].valueAsText
+        xoutput_feature = parameters[3].valueAsText
 
         utility_features = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb",
-                                        "ArcSDE_SDE_wPressurizedMain_2018")
+                                        "dGravityMain")
         database = "C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb"
         output_feature = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb",
-                                      "ArcSDE_SDE_wPressurizedMain_2018")
+                                      "dGravityMain")
+        subdivision_feature = os.path.join("C:\\Users\\avenneman\\Documents\\Programming\\SelectWork\\Features.gdb",
+                                           "Subdivisions_Res")
 
         if int(arcpy.GetCount_management(utility_features)[0]) == 0:
             messages.addErrorMessage(f"{utility_features} has no features")
@@ -151,8 +131,8 @@ class ProjectIDTool(object): #, Mixin):
         joined_feature = ProjectIDTool.copy_feature_class(self,
                                                           path,
                                                           gdb_name,
-                                                          "scratch.gdb",
-                                                          "polygon")
+                                                          subdivision_feature,
+                                                          utility_features)
 
         ProjectIDTool.compare_fields(self, joined_feature, utility_features)
         endtime = time.asctime(time.localtime(time.time()))
@@ -160,10 +140,12 @@ class ProjectIDTool(object): #, Mixin):
 
         return output_feature
 
+
 def main():
     tbx = Toolbox()
     tool = ProjectIDTool()
     tool.execute(tool.getParameterInfo(), None)
+
 
 if __name__ == "__main__":
     main()
