@@ -1,18 +1,31 @@
 from tkinter import *
 
 
-class gui:
-    window = Tk()
+class Gui():
+    def __init__(self):
+        window = Tk()
+        window.title("Fucking Final!")
+        frame1 = Frame(window)
+        frame1.pack()
 
-    btnOK = Button(window, text="Submit", fg="blue", command=self.processNamebutton("Alan"))
-    user = StringVar()
-    entry = Entry(window, textvariable=f"Welcome {user}")
+        self.label = Label(frame1, text="Enter your name ")
+        self.user = StringVar()
+        entryName = Entry(frame1, textvariable=self.user)
+        btnOK = Button(frame1, text="Submit", fg="blue", command=self.processNamebutton)
 
-    btnOK.pack()
-    entry.pack()
+        frame2 = Frame(window)
+        frame2.pack()
+        self.welcomeLabel = Label(frame2, text="Welcome !")
+        self.label.grid(row=1, column=1)
+        entryName.grid(row=1, column=2)
+        btnOK.grid(row=1, column=3)
+        self.welcomeLabel.grid(row=1, column=1)
 
-    window.mainloop()
-
+        window.mainloop()
 
     def processNamebutton(self):
-        print("Welcome ", self.user.get())
+        self.welcomeLabel["text"] = "Welcome " + self.user.get() + "!"
+        print("Submit button is pressed ", self.user.get())
+
+
+Gui()
