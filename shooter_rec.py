@@ -1,6 +1,6 @@
 import random
 
-# ROOM = random.randint(1, 500)
+ROOM = random.randint(1, 500)
 # Comment in the next line and choose 65 to test.
 ROOM = 65
 room_sizes = []
@@ -12,14 +12,16 @@ while again.upper() == 'Y':
     again = input("Enter another room size? Y/N")
 # maximum = max(room_sizes)
 
-def found(list):
-    next_room = list.pop()
+
+def found(target_list):
+    next_room = target_list.pop()
     if next_room == ROOM:
         print("You found him.")
     else:
-        if len(list) > 0:
-            return found(list)
+        if len(target_list) > 0:
+            return found(target_list)
         else:
             print("No shooter.")
+
 
 found(room_sizes)
