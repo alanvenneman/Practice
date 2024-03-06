@@ -13,13 +13,13 @@ while again.upper() == 'Y':
 # maximum = max(room_sizes)
 
 
-def found(target_list):
-    next_room = target_list.pop()
+def found(list):
+    next_room = list.pop()
     if next_room == ROOM:
         print("You found him.")
     else:
-        if len(target_list) > 0:
-            return found(target_list)
+        if len(list) > 0:
+            return found(list)
         else:
             print("No shooter.")
 

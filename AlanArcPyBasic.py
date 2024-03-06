@@ -1,10 +1,10 @@
 # AlanArcPyBasic.py
 # Author: Alan Venneman
 # Date: December 17, 2018
-# Purpose: Uses basic ArcPy functions to set up the GIS environment, check if a shapefile exists, and print some properties of the shapefile.
+# Purpose: Uses basic ArcPy functions to set up the GIS environment, check if a shapefile exists, and print some
+# properties of the shapefile.
 # Inputs/Outputs: None
 ##################################################
-print("-" * 40)
 
 # Import Modules
 import arcpy
