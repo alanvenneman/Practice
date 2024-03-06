@@ -1,5 +1,5 @@
 """Write a python class to create, deposit, withdraw a bank account. 
-The amount is saved in a file whenever an account is created with a initial deposit and thereafter deposit 
+The amount is saved in a file whenever an account is created with an initial deposit and thereafter deposit
 amount is added to the current amount, withdrawn amount is reduced from the current amount.
 
 Create an application using the above class to ask the user with create, deposit and withdraw options and 

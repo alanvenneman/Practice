@@ -5,12 +5,14 @@
 # Inputs: strInputDatum, strOutputDatum
 # Outputs: Datum transformation method
 ##################################################
+from past.builtins import raw_input
+
 print("-" * 40)
 
 # Prompt the user for input and output datums
 strInputDatum = raw_input("Input Datum?")
 strOutputDatum = raw_input("Output Datum?")
-print("Transformation: {} to {} ").format(strInputDatum, strOutputDatum)
+print(f"Transformation: {strInputDatum} to {strOutputDatum} ")
 # Evaluate the input and print messages to the user
 if strInputDatum == "" or strOutputDatum == "":
     print("You didn't enter two datums")
